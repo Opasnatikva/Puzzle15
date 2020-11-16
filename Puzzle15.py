@@ -1,3 +1,4 @@
+import copy
 import random
 
 BOARD_SIZE = 4
@@ -62,35 +63,48 @@ def populate_board(board):
         for row_index in range(len(board)):
             board[row_index][col_index] = numbers[0]
             numbers.remove(numbers[0])
+    return board
+
+
+# def find_empty_square(board):
+#     for row_index in range(len(board)):
+#         for col_index in range(len(board)):
+#             if board[row_index][col_index] == BLANK_STATE:
+#                 return row_index, col_index
 
 
 def find_empty_square(board):
     for row_index in range(len(board)):
-        for col_index in range(len(board)):
-            if board[row_index][col_index] == BLANK_STATE:
-                return row_index, col_index
+        col_index = board[row_index].index(BLANK_STATE) if BLANK_STATE in board[row_index] else None
+        if col_index is not None:
+            return row_index, col_index
 
 
-def shuffle_input():
-    random_moves = input("insert as many WASD letters as you want in order to shuffle the board")
-    return random_moves.lower()
+# def shuffle_input():
+#     random_moves = input("insert as many WASD letters as you want in order to shuffle the board")
+#     return random_moves.lower()
 
 
 def generate_random_string():
-    string = ''
-    for index in range(random.randrange(100,250)):
-        string += random.choice(['w', 'a', 's', 'd'])
-    return string
+    """Generate a string of random letters with a random length to make every game start differently.
+    The String is used in the Randomize function"""
+    random_string = ''
+    for _ in range(random.randrange(2, 5)):
+        random_string += random.choice(['w', 'a', 's', 'd'])
+    return random_string
 
 
-def randomize(board, sequence, empty_square_x, empty_square_y):
+def randomize_board(board, sequence, empty_square_x, empty_square_y):
+    """Take random string and make valid moves to scramble the board."""
     for index in sequence:
-        empty_square_x, empty_square_y = move(board, index, empty_square_x, empty_square_y)
+        board, empty_square_x, empty_square_y = move(board, index, empty_square_x, empty_square_y)
+    return board, empty_square_x, empty_square_y
 
 
 def input_and_border_check(empty_square_x, empty_square_y):
     """Take input from user, checks if what is provided is a single directional letter,
      and checks whether the move would be appropriate for the current blank field"""
+    direction = ''
     correct_input = False
     while not correct_input:
         direction = input("Please select which direction your desired would have to move"
@@ -113,9 +127,10 @@ def input_and_border_check(empty_square_x, empty_square_y):
     return direction
 
 
-def move(board, direction, empty_square_x, empty_square_y):
+def move(input_board, direction, empty_square_x, empty_square_y):
     """Takes the board, and the empty square, and based on the input overwrites the value of the empty square,
      and makes the source field the new empty field"""
+    board = input_board.copy()
     empty_x = empty_square_x
     empty_y = empty_square_y
     if direction == 'w' and empty_square_y < (BOARD_SIZE - 1):
@@ -134,26 +149,27 @@ def move(board, direction, empty_square_x, empty_square_y):
         board[empty_square_x][empty_square_y] = board[empty_square_x - 1][empty_square_y]
         board[empty_square_x - 1][empty_square_y] = BLANK_STATE
         empty_x = empty_square_x - 1
-    else:
-        return empty_x, empty_y
-    return empty_x, empty_y
+    # else:
+    #     return board, empty_x, empty_y
+    return board, empty_x, empty_y
 
 
 def main():
     board = generate_board()
-    populate_board(board)
-    print_board(board)
+    board = populate_board(board)
+    solution = copy.deepcopy(board)
     empty_square_x, empty_square_y = find_empty_square(board)
-    randomize(board, generate_random_string(), empty_square_x, empty_square_y)
-    while True:
+    board, empty_square_x, empty_square_y = randomize_board(board, generate_random_string(), empty_square_x, empty_square_y)
+    print_board(board)
+    while not compare_to_solution(board, solution):
         direction = input_and_border_check(empty_square_x, empty_square_y)
-        empty_square_x, empty_square_y = move(board, direction, empty_square_x, empty_square_y)
+        board, empty_square_x, empty_square_y = move(board, direction, empty_square_x, empty_square_y)
         print_board(board)
+    print("Congratulations!")
 
 
 if __name__ == '__main__':
     main()
-
 
 """Move да приема само direction string и ако е грешен, да не го изпълнява, 
 така когато randomize-ваме няма да имаме проблеми с boundary когато вкараме random стринг от asdwasdwasdwad..."""
