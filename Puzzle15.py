@@ -44,16 +44,9 @@ def puzzle_state(board, size=BOARD_SIZE):
     return order
 
 
-def compare_to_solution(puzzle_state, number_sequence):
-    if puzzle_state == number_sequence:
+def compare_to_solution(current_state, solved_state):
+    if current_state == solved_state:
         return True
-
-
-# def generate_new_random_number(numbers):
-#     """Chooses a number from the list at random and deletes it from the list"""
-#     number = random.choice(numbers)
-#     numbers.remove(number)
-#     return number
 
 
 def populate_board(board):
@@ -74,6 +67,8 @@ def populate_board(board):
 
 
 def find_empty_square(board):
+    """Every move is based on the program having information on the coordinates of the empty space.
+    The space is indexed once, then kept track of during each move."""
     for row_index in range(len(board)):
         col_index = board[row_index].index(BLANK_STATE) if BLANK_STATE in board[row_index] else None
         if col_index is not None:
@@ -95,7 +90,7 @@ def generate_random_string():
 
 
 def randomize_board(board, sequence, empty_square_x, empty_square_y):
-    """Take random string and make valid moves to scramble the board."""
+    """Take random string and scramble the board."""
     for index in sequence:
         board, empty_square_x, empty_square_y = move(board, index, empty_square_x, empty_square_y)
     return board, empty_square_x, empty_square_y
@@ -159,7 +154,8 @@ def main():
     board = populate_board(board)
     solution = copy.deepcopy(board)
     empty_square_x, empty_square_y = find_empty_square(board)
-    board, empty_square_x, empty_square_y = randomize_board(board, generate_random_string(), empty_square_x, empty_square_y)
+    board, empty_square_x, empty_square_y = randomize_board(board, generate_random_string(), empty_square_x,
+                                                            empty_square_y)
     print_board(board)
     while not compare_to_solution(board, solution):
         direction = input_and_border_check(empty_square_x, empty_square_y)
