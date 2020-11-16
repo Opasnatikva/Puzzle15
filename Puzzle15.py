@@ -76,9 +76,16 @@ def shuffle_input():
     return random_moves.lower()
 
 
-# def randomize(board, sequence, empty_square_x, empty_square_y):
-#     for index in sequence:
-#
+def generate_random_string():
+    string = ''
+    for index in range(random.randrange(100,250)):
+        string += random.choice(['w', 'a', 's', 'd'])
+    return string
+
+
+def randomize(board, sequence, empty_square_x, empty_square_y):
+    for index in sequence:
+        empty_square_x, empty_square_y = move(board, index, empty_square_x, empty_square_y)
 
 
 def input_and_border_check(empty_square_x, empty_square_y):
@@ -106,25 +113,24 @@ def input_and_border_check(empty_square_x, empty_square_y):
     return direction
 
 
-def move(board, empty_square_x, empty_square_y):
+def move(board, direction, empty_square_x, empty_square_y):
     """Takes the board, and the empty square, and based on the input overwrites the value of the empty square,
      and makes the source field the new empty field"""
-    direction = input_and_border_check(empty_square_x, empty_square_y)
     empty_x = empty_square_x
     empty_y = empty_square_y
-    if direction == 'w':
+    if direction == 'w' and empty_square_y < (BOARD_SIZE - 1):
         board[empty_square_x][empty_square_y] = board[empty_square_x][empty_square_y + 1]
         board[empty_square_x][empty_square_y + 1] = BLANK_STATE
         empty_y = empty_square_y + 1
-    elif direction == "s":
+    elif direction == "s" and empty_square_y > 0:
         board[empty_square_x][empty_square_y] = board[empty_square_x][empty_square_y - 1]
         board[empty_square_x][empty_square_y - 1] = BLANK_STATE
         empty_y = empty_square_y - 1
-    elif direction == "a":
+    elif direction == "a" and empty_square_x < (BOARD_SIZE - 1):
         board[empty_square_x][empty_square_y] = board[empty_square_x + 1][empty_square_y]
         board[empty_square_x + 1][empty_square_y] = BLANK_STATE
         empty_x = empty_square_x + 1
-    elif direction == "d":
+    elif direction == "d" and empty_square_x > 0:
         board[empty_square_x][empty_square_y] = board[empty_square_x - 1][empty_square_y]
         board[empty_square_x - 1][empty_square_y] = BLANK_STATE
         empty_x = empty_square_x - 1
@@ -138,9 +144,10 @@ def main():
     populate_board(board)
     print_board(board)
     empty_square_x, empty_square_y = find_empty_square(board)
-
+    randomize(board, generate_random_string(), empty_square_x, empty_square_y)
     while True:
-        empty_square_x, empty_square_y = move(board, empty_square_x, empty_square_y)
+        direction = input_and_border_check(empty_square_x, empty_square_y)
+        empty_square_x, empty_square_y = move(board, direction, empty_square_x, empty_square_y)
         print_board(board)
 
 
