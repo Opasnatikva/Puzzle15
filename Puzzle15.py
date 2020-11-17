@@ -66,13 +66,25 @@ def populate_board(board):
 #                 return row_index, col_index
 
 
-def find_empty_square(board):
+def find_specific_square(board, value):
     """Every move is based on the program having information on the coordinates of the empty space.
     The space is indexed once, then kept track of during each move."""
+    """In order for the puzzle to be solved automatically, we need it to be able to analyze the board, and find the
+    values it needs in order to then set them in the correct places."""
     for row_index in range(len(board)):
-        col_index = board[row_index].index(BLANK_STATE) if BLANK_STATE in board[row_index] else None
+        col_index = board[row_index].index(BLANK_STATE) if value in board[row_index] else None
         if col_index is not None:
             return row_index, col_index
+
+
+"""We need to find the empty square, find the origin square of the number, then shift the empty square a number of times
+to move the number to the final position. We need to consider the unintended shift of other numbers on the board."""
+
+def move_number_one(board):
+    blank_row_index, blank_col_index = find_specific_square(board, BLANK_STATE)
+    one_row_index, one_col_index = find_specific_square(board, "01")
+    if blank_row_index > one_row_index:
+        move()
 
 
 # def shuffle_input():
@@ -84,7 +96,7 @@ def generate_random_string():
     """Generate a string of random letters with a random length to make every game start differently.
     The String is used in the Randomize function"""
     random_string = ''
-    for _ in range(random.randrange(2, 5)):
+    for _ in range(random.randrange(200, 500)):
         random_string += random.choice(['w', 'a', 's', 'd'])
     return random_string
 
@@ -122,30 +134,53 @@ def input_and_border_check(empty_square_x, empty_square_y):
     return direction
 
 
+def move_left(board, empty_square_x, empty_square_y):
+    """Overwrite blank space with value from relevant field, overwrite the adjacent relevant field with BLANK_SPACE
+    return relevant coordinate to update the location of the blank field"""
+    board[empty_square_x][empty_square_y] = board[empty_square_x + 1][empty_square_y]
+    board[empty_square_x + 1][empty_square_y] = BLANK_STATE
+    return empty_square_x + 1
+
+
+def move_right(board, empty_square_x, empty_square_y):
+    """Overwrite blank space with value from relevant field, overwrite the adjacent relevant field with BLANK_SPACE
+        return relevant coordinate to update the location of the blank field"""
+    board[empty_square_x][empty_square_y] = board[empty_square_x - 1][empty_square_y]
+    board[empty_square_x - 1][empty_square_y] = BLANK_STATE
+    return empty_square_x - 1
+
+
+def move_up(board, empty_square_x, empty_square_y):
+    """Overwrite blank space with value from relevant field, overwrite the adjacent relevant field with BLANK_SPACE
+        return relevant coordinate to update the location of the blank field"""
+    board[empty_square_x][empty_square_y] = board[empty_square_x][empty_square_y + 1]
+    board[empty_square_x][empty_square_y + 1] = BLANK_STATE
+    return empty_square_y + 1
+
+
+def move_down(board, empty_square_x, empty_square_y):
+    """Overwrite blank space with value from relevant field, overwrite the adjacent relevant field with BLANK_SPACE
+        return relevant coordinate to update the location of the blank field"""
+    board[empty_square_x][empty_square_y] = board[empty_square_x][empty_square_y - 1]
+    board[empty_square_x][empty_square_y - 1] = BLANK_STATE
+    return empty_square_y - 1
+
+
 def move(input_board, direction, empty_square_x, empty_square_y):
-    """Takes the board, and the empty square, and based on the input overwrites the value of the empty square,
-     and makes the source field the new empty field"""
+    """Takes the board, and the empty square, and based on the input calls the relevant directional move function,
+    then returns the new board state and the updated coordinates of the empty field"""
     board = input_board.copy()
     empty_x = empty_square_x
     empty_y = empty_square_y
     if direction == 'w' and empty_square_y < (BOARD_SIZE - 1):
-        board[empty_square_x][empty_square_y] = board[empty_square_x][empty_square_y + 1]
-        board[empty_square_x][empty_square_y + 1] = BLANK_STATE
-        empty_y = empty_square_y + 1
+        empty_y = move_up(board, empty_square_x, empty_square_y)
     elif direction == "s" and empty_square_y > 0:
-        board[empty_square_x][empty_square_y] = board[empty_square_x][empty_square_y - 1]
-        board[empty_square_x][empty_square_y - 1] = BLANK_STATE
-        empty_y = empty_square_y - 1
+        empty_y = move_down(board, empty_square_x, empty_square_y)
     elif direction == "a" and empty_square_x < (BOARD_SIZE - 1):
-        board[empty_square_x][empty_square_y] = board[empty_square_x + 1][empty_square_y]
-        board[empty_square_x + 1][empty_square_y] = BLANK_STATE
-        empty_x = empty_square_x + 1
+        empty_x = move_left(board, empty_square_x, empty_square_y)
     elif direction == "d" and empty_square_x > 0:
-        board[empty_square_x][empty_square_y] = board[empty_square_x - 1][empty_square_y]
-        board[empty_square_x - 1][empty_square_y] = BLANK_STATE
-        empty_x = empty_square_x - 1
-    # else:
-    #     return board, empty_x, empty_y
+        empty_x = move_right(board, empty_square_x, empty_square_y)
+
     return board, empty_x, empty_y
 
 
@@ -153,7 +188,7 @@ def main():
     board = generate_board()
     board = populate_board(board)
     solution = copy.deepcopy(board)
-    empty_square_x, empty_square_y = find_empty_square(board)
+    empty_square_x, empty_square_y = find_specific_square(board, BLANK_STATE)
     board, empty_square_x, empty_square_y = randomize_board(board, generate_random_string(), empty_square_x,
                                                             empty_square_y)
     print_board(board)
