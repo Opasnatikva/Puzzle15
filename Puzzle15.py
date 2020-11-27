@@ -92,14 +92,16 @@ def set_blank_space(board, number_coors, empty_square_coors):
                 # one above the number (until they are one above the other)
                 board, empty_square_coors = move(board, BLANK_DOWN, empty_square_coors)  # Move the empty square down
     elif empty_square_coors[1] > number_coors[1]:  # If the empty square is below the number
-        if number_coors[0] != empty_square_coors[0]:  # If the number is not in the same column
-            while empty_square_coors[1] > (number_coors[1]):  # While the empty square is below the number
-                # (until they are on the same row)
-                board, empty_square_coors = move(board, BLANK_UP, empty_square_coors)  # Move the empty square up
+        if number_coors[0] < empty_square_coors[0]:  # If the number is not in the same row
+            while empty_square_coors[0] < (number_coors[0]):  # While the empty square is to the left from the number
+                # (until they are in the same column)
+                board, empty_square_coors = move(board, BLANK_RIGHT, empty_square_coors)  # Move the empty square right
         else:
-            while empty_square_coors[1] > (number_coors[1] + 1):  # While the empty square is more than
-                # one below the number (until they are one above the other)
-                board, empty_square_coors = move(board, BLANK_UP, empty_square_coors)  # Move the empty square up
+            while empty_square_coors[0] > (number_coors[0]):  # While the empty square is more than
+                # one to the right from the number (until they are one above the other)
+                board, empty_square_coors = move(board, BLANK_LEFT, empty_square_coors)  # Move the empty square left
+        while empty_square_coors[1] > empty_square_coors[1] + 1:  # While empty square is more than 1 below the number
+            board, empty_square_coors = move(board, BLANK_UP, empty_square_coors)  # Move the empty square up
     """move empty square immediate to the left or right from the active number"""
     while empty_square_coors[0] > number_coors[0] + 1:  # Empty square is further than immediately to the right
         board, empty_square_coors = move(board, BLANK_LEFT, empty_square_coors)  # Move the empty square up
@@ -113,22 +115,22 @@ def not_leftmost_col(board, number_coors, empty_square_coors, target_coors):
     if number_coors[0] == 0:  # If the number is in the leftmost column
         while number_coors[0] < target_coors[0]:
             if empty_square_coors[1] == number_coors[1] - 1:  # If the empty square is above the number
-                board, empty_square_coors = move(board, TOP_TO_RIGHT, empty_square_coors)  # Move the empty square
-                # immediately to the right from the number
+                board, empty_square_coors = make_multiple_moves(board, TOP_TO_RIGHT, empty_square_coors)
+                """Move the empty square immediately to the right from the number"""
             elif number_coors[1] == number_coors[1] + 1:  # If the empty square is below the number
-                board, empty_square_coors = move(board, BOTTOM_TO_RIGHT, empty_square_coors)  # Move the empty square
-                # immediately to the right from the number
+                board, empty_square_coors = make_multiple_moves(board, BOTTOM_TO_RIGHT, empty_square_coors)
+                """Move the empty square immediately to the right from the number"""
     return board, empty_square_coors
 
 
-def not_bottom_two_rows(board, number_coors, empty_square_coors):
+def not_bottom_row(board, number_coors, empty_square_coors):
     if number_coors[1] == BOARD_SIZE - 1:  # If the number is on the bottom row
         if empty_square_coors[0] == number_coors[0] - 1:  # If empty square adjacent left from number
             board, empty_square_coors = move(board, BLANK_RIGHT, empty_square_coors)
-            board, empty_square_coors = move(board, RIGHT_TO_TOP, empty_square_coors)
+            board, empty_square_coors = make_multiple_moves(board, RIGHT_TO_TOP, empty_square_coors)
             board, empty_square_coors = move(board, BLANK_DOWN, empty_square_coors)
         elif empty_square_coors[0] == number_coors[0] + 1:  # If empty square adjacent right from number
-            board, empty_square_coors = move(board, RIGHT_TO_TOP, empty_square_coors)
+            board, empty_square_coors = make_multiple_moves(board, RIGHT_TO_TOP, empty_square_coors)
             board, empty_square_coors = move(board, BLANK_DOWN, empty_square_coors)
             print_board(board)
     return board, empty_square_coors
@@ -152,14 +154,14 @@ def set_empty_square_right(board, empty_square_coors, number_coors):
         else:
             board, empty_square_coors = make_multiple_moves(board, 'aw', empty_square_coors)
     elif empty_square_coors[0] < number_coors[0]:
-        board, empty_square_coors = make_multiple_moves(board, BLANK_RIGHT, empty_square_coors)
+        board, empty_square_coors = move(board, BLANK_RIGHT, empty_square_coors)
     return board, empty_square_coors
 
 
 def set_empty_square_up(board, empty_square_coors, number_coors):
     if empty_square_coors[0] == number_coors[0]:
         if empty_square_coors[1] > number_coors[1]:
-            board, empty_square_coors = make_multiple_moves(board, BLANK_UP, empty_square_coors)
+            board, empty_square_coors = move(board, BLANK_UP, empty_square_coors)
         else:
             return board, empty_square_coors
     elif empty_square_coors[0] < number_coors[0]:
@@ -176,7 +178,7 @@ def set_empty_square_down(board, empty_square_coors, number_coors):
         else:
             board, empty_square_coors = make_multiple_moves(board, 'aw', empty_square_coors)
     elif empty_square_coors[0] < number_coors[0]:
-        board, empty_square_coors = make_multiple_moves(board, BLANK_RIGHT, empty_square_coors)
+        board, empty_square_coors = move(board, BLANK_RIGHT, empty_square_coors)
     return board, empty_square_coors
 
 
@@ -196,7 +198,7 @@ def set_number_in_place(board, number_coors, empty_square_coors, target_coors):
     """Move number away from the leftmost column unless the target is there"""
     board, empty_square_coors = not_leftmost_col(board, number_coors, empty_square_coors, target_coors)
     """Move number away from the bottom row"""
-    board, empty_square_coors = not_bottom_two_rows(board, number_coors, empty_square_coors)
+    board, empty_square_coors = not_bottom_row(board, number_coors, empty_square_coors)
     """Move active number to goal column"""
     if number_coors[0] > target_coors[0]:  # If the number is further right than the target square
         set_directional_blank(board, 'left', empty_square_coors, number_coors)
@@ -209,30 +211,33 @@ def set_number_in_place(board, number_coors, empty_square_coors, target_coors):
                 board, empty_square_coors = make_multiple_moves(board, RETURN_BLANK_LEFT, empty_square_coors)
             print_board(board)
     elif number_coors[0] < target_coors[0]:
+        set_directional_blank(board, 'right', empty_square_coors, number_coors)
         same_column = False
         while not same_column:
             board, empty_square_coors = move(board, BLANK_LEFT, empty_square_coors)
             if number_coors[0] == target_coors[0]:
                 same_column = True
             else:
-                board, empty_square_coors = move(board, RETURN_BLANK_RIGHT, empty_square_coors)
+                board, empty_square_coors = make_multiple_moves(board, RETURN_BLANK_RIGHT, empty_square_coors)
             print_board(board)
     """Move active number to goal row"""
     if number_coors[1] > target_coors[1]:
+        set_directional_blank(board, 'up', empty_square_coors, number_coors)
         same_row = False
         while not same_row:
             board, empty_square_coors = move(board, BLANK_DOWN, empty_square_coors)
             if number_coors[1] > target_coors[1]:
-                board, empty_square_coors = move(board, RETURN_BLANK_ABOVE, empty_square_coors)
+                board, empty_square_coors = make_multiple_moves(board, RETURN_BLANK_ABOVE, empty_square_coors)
             else:
                 same_row = True
             print_board(board)
     elif number_coors[1] < target_coors[1]:
+        set_directional_blank(board, 'down', empty_square_coors, number_coors)
         same_row = False
         while not same_row:
             board, empty_square_coors = move(board, BLANK_UP, empty_square_coors)
             if number_coors[1] < target_coors[1]:
-                board, empty_square_coors = move(board, RETURN_BLANK_BELOW, empty_square_coors)
+                board, empty_square_coors = make_multiple_moves(board, RETURN_BLANK_BELOW, empty_square_coors)
             else:
                 same_row = True
         print_board(board)
@@ -249,28 +254,29 @@ def self_solving_structure(board, solution):
         number_as_string = format(number, '02d')
         target_coors = find_specific_square(solution, number_as_string)
         number_coors = find_specific_square(board, number_as_string)
-        if number + (2 * BOARD_SIZE) > BOARD_SIZE * BOARD_SIZE:
-            """Find the first numbers of the last two columns, and set them in their places"""
-            """Wiggle the other numbers around randomly, until it is solved."""
-            pass
-        elif (number + 1) % BOARD_SIZE == 0:  # Деление с остатък МАДАФАКА!!!
-            """set the final number first"""
-            one_plus_number_as_string = str(number).format(number + 1, '02d')
-            number_coors = find_specific_square(board,
-                                                one_plus_number_as_string)  # Take the coors of the last num on the row
-            board, empty_square_coors = set_blank_space(board, number_coors,
-                                                        empty_square_coors)  # Set the blank space to the left of target
-            board, empty_square_coors = set_number_in_place(board, number_coors, empty_square_coors, target_coors)
-            """Set the previous number on the square below it"""
-            number_coors = find_specific_square(board, number_as_string)
-            target_coors[1] += 1
-            board, empty_square_coors = set_blank_space(board, number_coors, empty_square_coors)
-            board, empty_square_coors = set_number_in_place(board, number_coors, empty_square_coors, target_coors)
-            """shift them clockwise so they set in place"""
-            board, empty_square_coors = make_multiple_moves(board, 'assdw', empty_square_coors)
-        else:  # Number is not in the last two columns or last two rows
-            board, empty_square_coors = set_blank_space(board, number_coors, empty_square_coors)
-            board, empty_square_coors = set_number_in_place(board, number_coors, empty_square_coors, target_coors)
+        if number_coors != target_coors:
+            if number + (2 * BOARD_SIZE) > BOARD_SIZE * BOARD_SIZE:
+                """Find the first numbers of the last two columns, and set them in their places"""
+                """Wiggle the other numbers around randomly, until it is solved."""
+                pass
+            elif (number + 1) % BOARD_SIZE == 0:  # Деление с остатък МАДАФАКА!!!
+                """set the final number first"""
+                one_plus_number_as_string = str(number).format(number + 1, '02d')
+                number_coors = find_specific_square(board,
+                                                    one_plus_number_as_string)  # Take coors of the last num on the row
+                board, empty_square_coors = set_blank_space(board, number_coors,
+                                                            empty_square_coors)  # Set blank space to the left of target
+                board, empty_square_coors = set_number_in_place(board, number_coors, empty_square_coors, target_coors)
+                """Set the previous number on the square below it"""
+                number_coors = find_specific_square(board, number_as_string)
+                target_coors[1] += 1
+                board, empty_square_coors = set_blank_space(board, number_coors, empty_square_coors)
+                board, empty_square_coors = set_number_in_place(board, number_coors, empty_square_coors, target_coors)
+                """shift them clockwise so they set in place"""
+                board, empty_square_coors = make_multiple_moves(board, 'assdw', empty_square_coors)
+            else:  # Number is not in the last two columns or last two rows
+                board, empty_square_coors = set_blank_space(board, number_coors, empty_square_coors)
+                board, empty_square_coors = set_number_in_place(board, number_coors, empty_square_coors, target_coors)
     print_board(board)
 
 
@@ -292,7 +298,7 @@ def generate_random_string():
 
 
 def make_multiple_moves(board, sequence, empty_square_coors):
-    """Take random string and scramble the board."""
+    """Take random string and move board based on it."""
     for index in sequence:
         board, empty_square_coors = move(board, index, empty_square_coors)
     return board, empty_square_coors
@@ -371,7 +377,6 @@ def move(input_board, direction, empty_square_coors):
         empty_coors[0] = move_left(board, empty_square_coors)
     elif direction == "d" and empty_square_coors[0] > 0:
         empty_coors[0] = move_right(board, empty_square_coors)
-
     return board, empty_coors
 
 
